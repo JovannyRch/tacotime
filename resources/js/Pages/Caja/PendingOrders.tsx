@@ -7,15 +7,21 @@ import { router } from "@inertiajs/react";
 import { DollarSign, Eye, List, Printer, Ticket } from "lucide-react";
 import { useEffect, useState } from "react";
 import { CobrarOrdenModal } from "./components/CobrarOrdenModal";
+
+import Pusher from "pusher-js";
 import { echo } from "@/echo";
 
 interface Props extends PageProps {
     orders: Order[];
 }
 
-export default function OrdenesPendientesPage({ orders }: Props) {
+export default function OrdenesPendientesPage({
+    orders: initialOrders,
+}: Props) {
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+
+    const [orders, setOrders] = useState<Order[]>(initialOrders);
 
     const cobrarOrden = (order: Order) => {
         setSelectedOrder(order);
@@ -27,20 +33,19 @@ export default function OrdenesPendientesPage({ orders }: Props) {
     };
 
     useEffect(() => {
-        const channel = echo.channel("orders"); // o echo.private('cashier')
+        const ch = echo.channel("orders"); // público
 
-        const handler = (payload: any) => {
+        const onCreate = (payload: any) => {
             console.log("Nueva orden", payload);
+            setOrders((prev) => [payload, ...prev]);
         };
 
-        channel.listen("order.created", handler);
-
+        ch.listen("order.created", onCreate);
         return () => {
-            channel.stopListening(".order.created", handler);
-            echo.leaveChannel("orders");
+            ch.stopListening("order.created", onCreate);
+            echo.leave("orders");
         };
     }, []);
-
     return (
         <div className="space-y-4">
             <h1 className="text-2xl font-bold text-teal-700">

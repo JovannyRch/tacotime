@@ -5,11 +5,7 @@ window.Pusher = Pusher;
 
 export const echo = new Echo({
     broadcaster: "pusher",
-    key: import.meta.env.VITE_REVERB_APP_KEY,
-    wsHost: import.meta.env.VITE_REVERB_HOST,
-    wsPort: Number(import.meta.env.VITE_REVERB_PORT ?? 443),
-    wssPort: Number(import.meta.env.VITE_REVERB_PORT ?? 443),
-    forceTLS: (import.meta.env.VITE_REVERB_SCHEME ?? "https") === "https",
-    enabledTransports: ["ws", "wss"],
-    cluster: "us2",
+    key: import.meta.env.VITE_PUSHER_KEY,
+    cluster: import.meta.env.VITE_PUSHER_CLUSTER,
+    forceTLS: true,
 });
