@@ -2,15 +2,16 @@
 
 namespace App\Events;
 
+use App\Models\Order;
 use Illuminate\Broadcasting\Channel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 
-class OrderCreated implements ShouldBroadcast
+class OrderCreated implements ShouldBroadcastNow
 {
-    public function __construct(public \App\Models\Order $order) {}
-    public function broadcastOn(): Channel
+    public function __construct(public Order $order) {}
+    public function broadcastOn(): array
     {
-        return new Channel('orders');
+        return [new Channel('orders')];
     }
     public function broadcastAs(): string
     {

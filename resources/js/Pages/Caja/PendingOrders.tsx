@@ -4,12 +4,10 @@ import { PageProps } from "@/types";
 import { Order } from "@/types/global";
 import { formatCurrency, getTableNameOrDefault } from "@/utils/utils";
 import { router } from "@inertiajs/react";
-import { DollarSign, Eye, List, Printer, Ticket } from "lucide-react";
+import { DollarSign, Eye, List, Printer } from "lucide-react";
 import { useEffect, useState } from "react";
 import { CobrarOrdenModal } from "./components/CobrarOrdenModal";
-
 import Pusher from "pusher-js";
-import { echo } from "@/echo";
 
 interface Props extends PageProps {
     orders: Order[];
@@ -21,7 +19,7 @@ export default function OrdenesPendientesPage({
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
-    const [orders, setOrders] = useState<Order[]>(initialOrders);
+    const [orders, setOrders] = useState<Order[]>([]);
 
     const cobrarOrden = (order: Order) => {
         setSelectedOrder(order);
@@ -33,19 +31,27 @@ export default function OrdenesPendientesPage({
     };
 
     useEffect(() => {
-        const ch = echo.channel("orders"); // público
+        setOrders(initialOrders);
+    }, [initialOrders]);
 
-        const onCreate = (payload: any) => {
-            console.log("Nueva orden", payload);
-            setOrders((prev) => [payload, ...prev]);
-        };
+    useEffect(() => {
+        var pusher = new Pusher(import.meta.env.VITE_PUSHER_KEY, {
+            cluster: import.meta.env.VITE_PUSHER_CLUSTER,
+        });
 
-        ch.listen("order.created", onCreate);
+        var channel = pusher.subscribe("orders");
+        channel.bind("order.created", (payload: Order) => {
+            setOrders((prevOrders) => [payload, ...prevOrders]);
+
+            document.getElementById(`comanda-button-${payload.id}`)?.click();
+        });
+
         return () => {
-            ch.stopListening("order.created", onCreate);
-            echo.leave("orders");
+            channel.unbind_all();
+            channel.unsubscribe();
         };
     }, []);
+
     return (
         <div className="space-y-4">
             <h1 className="text-2xl font-bold text-teal-700">
@@ -105,6 +111,7 @@ export default function OrdenesPendientesPage({
                                         variant="secondary"
                                         asChild
                                         size="icon"
+                                        id={`comanda-button-${order.id}`}
                                     >
                                         <a
                                             href={route(
@@ -136,6 +143,7 @@ export default function OrdenesPendientesPage({
         </div>
     );
 }
+
 OrdenesPendientesPage.layout = (page: React.ReactNode) => (
     <CajeroLayout pageName="Órdenes Pendientes">{page}</CajeroLayout>
 );
