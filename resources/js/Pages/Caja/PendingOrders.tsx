@@ -4,9 +4,10 @@ import { PageProps } from "@/types";
 import { Order } from "@/types/global";
 import { formatCurrency, getTableNameOrDefault } from "@/utils/utils";
 import { router } from "@inertiajs/react";
-import { DollarSign, Eye, Printer } from "lucide-react";
-import { useState } from "react";
+import { DollarSign, Eye, List, Printer, Ticket } from "lucide-react";
+import { useEffect, useState } from "react";
 import { CobrarOrdenModal } from "./components/CobrarOrdenModal";
+import { echo } from "@/echo";
 
 interface Props extends PageProps {
     orders: Order[];
@@ -24,6 +25,21 @@ export default function OrdenesPendientesPage({ orders }: Props) {
     const reloadPage = () => {
         router.reload();
     };
+
+    useEffect(() => {
+        const channel = echo.channel("orders"); // o echo.private('cashier')
+
+        const handler = (payload: any) => {
+            console.log("Nueva orden", payload);
+        };
+
+        channel.listen("order.created", handler);
+
+        return () => {
+            channel.stopListening(".order.created", handler);
+            echo.leaveChannel("orders");
+        };
+    }, []);
 
     return (
         <div className="space-y-4">
@@ -78,6 +94,22 @@ export default function OrdenesPendientesPage({ orders }: Props) {
                                             rel="noreferrer"
                                         >
                                             <Printer />
+                                        </a>
+                                    </Button>
+                                    <Button
+                                        variant="secondary"
+                                        asChild
+                                        size="icon"
+                                    >
+                                        <a
+                                            href={route(
+                                                "orders.comanda",
+                                                order.id,
+                                            )}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                        >
+                                            <List />
                                         </a>
                                     </Button>
                                 </div>

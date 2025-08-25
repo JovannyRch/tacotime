@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\OrderCreated;
 use App\Models\Combo;
 use App\Models\Order;
 use App\Models\Product;
@@ -112,6 +113,9 @@ class OrderController extends Controller
             if ($order->table) {
                 $order->table->update(['status' => 'ocupada']);
             }
+
+            event(new OrderCreated($order));
+
 
             if (Auth::user()->role === 'mesero') {
                 return redirect()->route('mesero.dashboard')->with([
