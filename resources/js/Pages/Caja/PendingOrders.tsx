@@ -23,7 +23,7 @@ export default function OrdenesPendientesPage({
 
     const [orders, setOrders] = useState<Order[]>([]);
 
-    const { isRecent, markRecent } = useRecentHighlights(2000);
+    const { isRecent, markRecent } = useRecentHighlights(6000);
 
     const cobrarOrden = (order: Order) => {
         setSelectedOrder(order);
@@ -45,6 +45,8 @@ export default function OrdenesPendientesPage({
             );
 
             markRecent(newOrder.id);
+            const url = route("orders.comanda", newOrder.id) + "?auto_print=1";
+            window.open(url, "_blank");
         },
     });
 
@@ -114,10 +116,12 @@ export default function OrdenesPendientesPage({
                                         id={`comanda-button-${order.id}`}
                                     >
                                         <a
-                                            href={route(
-                                                "orders.comanda",
-                                                order.id,
-                                            )}
+                                            href={
+                                                route(
+                                                    "orders.comanda",
+                                                    order.id,
+                                                ) + "?auto_print=1"
+                                            }
                                             target="_blank"
                                             rel="noreferrer"
                                         >

@@ -1,12 +1,12 @@
 // Comanda.tsx
-import { Order } from '@/types/global';
-import { format } from 'date-fns';
-import { useEffect } from 'react';
+import { Order } from "@/types/global";
+import { format } from "date-fns";
+import { useEffect } from "react";
 
 export default function Comanda({
     order,
     getTableNameOrDefault,
-    businessName = 'Taco Time',
+    businessName = "Taco Time",
 }: {
     order: Order;
     getTableNameOrDefault: (o: Order) => string;
@@ -15,16 +15,16 @@ export default function Comanda({
     const items = [...(order.products || []), ...(order.combos || [])];
 
     const hora = order.created_at
-        ? format(new Date(order.created_at), 'HH:mm')
-        : format(new Date(), 'HH:mm');
+        ? format(new Date(order.created_at), "HH:mm")
+        : format(new Date(), "HH:mm");
 
     const place = order?.is_delivery
-        ? 'Para llevar'
+        ? "Para llevar"
         : (order.table?.name ?? getTableNameOrDefault(order));
 
     const renderComplements = (c?: string | string[]) => {
         if (!c || (Array.isArray(c) && c.length === 0)) return null;
-        const text = Array.isArray(c) ? c.join(', ') : c;
+        const text = Array.isArray(c) ? c.join(", ") : c;
         return (
             <div className="whitespace-pre-wrap text-[10px] leading-4">
                 • {text}
@@ -33,7 +33,10 @@ export default function Comanda({
     };
 
     useEffect(() => {
-        window.print();
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get("auto_print") === "1") {
+            window.print();
+        }
     }, []);
 
     const renderNotes = (n?: string | null) =>
@@ -47,7 +50,7 @@ export default function Comanda({
         <div className="w-[280px] max-w-full text-xs print:w-[280px]">
             {/* Encabezado */}
             <div className="mb-2 text-center">
-                <h1 className="text-sm font-extrabold uppercase tracking-wide">
+                <h1 className="text-sm font-extrabold tracking-wide uppercase">
                     {businessName}
                 </h1>
                 <p className="text-[11px]">{place}</p>
@@ -71,11 +74,11 @@ export default function Comanda({
                     {items.map((item) => (
                         <div key={item.id} className="mb-2">
                             <div className="flex items-start gap-2">
-                                <div className="min-w-8 text-base font-extrabold tabular-nums">
+                                <div className="text-base font-extrabold min-w-8 tabular-nums">
                                     {Number(item.pivot.quantity)}×
                                 </div>
                                 <div className="flex-1">
-                                    <div className="font-extrabold uppercase leading-5">
+                                    <div className="font-extrabold leading-5 uppercase">
                                         {item.name}
                                     </div>
                                     {renderComplements(item.pivot.complements)}
