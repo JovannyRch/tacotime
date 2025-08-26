@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\UpdateTable;
 use App\Models\CashRegisterSession;
 use App\Models\Order;
 use App\Models\Payment;
@@ -170,6 +171,7 @@ class CashRegisterSessionController extends Controller
 
         if ($order->table) {
             $order->table->update(['status' => 'disponible']);
+            event(new UpdateTable($order->table));
         }
 
         return response()->json($payment, 201);

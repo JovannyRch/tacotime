@@ -8,6 +8,8 @@ import { DollarSign, Eye, List, Printer } from "lucide-react";
 import { useEffect, useState } from "react";
 import { CobrarOrdenModal } from "./components/CobrarOrdenModal";
 import Pusher from "pusher-js";
+import { usePusherChannel } from "@/hooks/usePusherChannel";
+import { useRecentHighlights } from "@/hooks/useRecentHighlights";
 
 interface Props extends PageProps {
     orders: Order[];
@@ -21,6 +23,8 @@ export default function OrdenesPendientesPage({
 
     const [orders, setOrders] = useState<Order[]>([]);
 
+    const { isRecent, markRecent } = useRecentHighlights(2000);
+
     const cobrarOrden = (order: Order) => {
         setSelectedOrder(order);
         setModalOpen(true);
@@ -30,27 +34,23 @@ export default function OrdenesPendientesPage({
         router.reload();
     };
 
+    usePusherChannel("orders", {
+        "order.created": (payload: Order) => {
+            const newOrder = payload;
+
+            setOrders((prev) =>
+                prev.some((o) => o.id === newOrder.id)
+                    ? prev
+                    : [newOrder, ...prev],
+            );
+
+            markRecent(newOrder.id);
+        },
+    });
+
     useEffect(() => {
         setOrders(initialOrders);
     }, [initialOrders]);
-
-    useEffect(() => {
-        var pusher = new Pusher(import.meta.env.VITE_PUSHER_KEY, {
-            cluster: import.meta.env.VITE_PUSHER_CLUSTER,
-        });
-
-        var channel = pusher.subscribe("orders");
-        channel.bind("order.created", (payload: Order) => {
-            setOrders((prevOrders) => [payload, ...prevOrders]);
-
-            document.getElementById(`comanda-button-${payload.id}`)?.click();
-        });
-
-        return () => {
-            channel.unbind_all();
-            channel.unsubscribe();
-        };
-    }, []);
 
     return (
         <div className="space-y-4">
@@ -65,7 +65,7 @@ export default function OrdenesPendientesPage({
                     {orders.map((order) => (
                         <div
                             key={order.id}
-                            className="flex items-center justify-between p-4 bg-white rounded shadow"
+                            className={`flex items-center justify-between p-4 rounded shadow ${isRecent(order.id) ? "bg-yellow-50 ring-2 ring-yellow-300 shadow-yellow-200 scale-[1.01]" : "bg-white "}`}
                         >
                             <div>
                                 <p className="font-semibold">
