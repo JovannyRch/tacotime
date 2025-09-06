@@ -1,6 +1,6 @@
-import { Order, PaymentMethod } from '@/types/global';
-import { formatCurrency, getTableNameOrDefault } from '@/utils/utils';
-import { useEffect } from 'react';
+import { Order, PaymentMethod } from "@/types/global";
+import { formatCurrency, getTableNameOrDefault } from "@/utils/utils";
+import { useEffect } from "react";
 
 interface Props {
     order: Order;
@@ -10,23 +10,26 @@ export default function Ticket({ order }: Props) {
     const payment = order?.payment;
     useEffect(() => {
         window.print();
+        setTimeout(() => {
+            window.close();
+        }, 500);
     }, []);
 
     const getPaymentMethod = (method: PaymentMethod) => {
         switch (method) {
-            case 'cash':
-                return 'Efectivo';
-            case 'card':
-                return 'Tarjeta';
-            case 'transfer':
-                return 'Transferencia';
+            case "cash":
+                return "Efectivo";
+            case "card":
+                return "Tarjeta";
+            case "transfer":
+                return "Transferencia";
             default:
-                return 'Desconocido';
+                return "Desconocido";
         }
     };
 
     const getChange = () => {
-        if (payment?.method === 'cash' && payment.change !== null) {
+        if (payment?.method === "cash" && payment.change !== null) {
             return (
                 <>
                     <div className="flex justify-between">
@@ -46,9 +49,9 @@ export default function Ticket({ order }: Props) {
     const hasDiscount = (Number(payment?.discount_amount) || 0) > 0;
 
     const discountTypeLabel =
-        payment?.discount_type === 'PERCENT'
+        payment?.discount_type === "PERCENT"
             ? `${Number(payment?.discount_value ?? 0)}%`
-            : payment?.discount_type === 'FIXED'
+            : payment?.discount_type === "FIXED"
               ? `${formatCurrency(Number(payment?.discount_value ?? 0))}`
               : null;
 
@@ -105,7 +108,7 @@ export default function Ticket({ order }: Props) {
 
                 <div className="my-2 border-t border-dashed" />
 
-                <div className="mt-1 flex justify-between text-sm font-bold">
+                <div className="flex justify-between mt-1 text-sm font-bold">
                     <span>Total</span>
                     <span>
                         {formatCurrency(
@@ -114,7 +117,7 @@ export default function Ticket({ order }: Props) {
                     </span>
                 </div>
                 {hasDiscount && (
-                    <div className="mt-1 flex justify-between text-sm font-bold">
+                    <div className="flex justify-between mt-1 text-sm font-bold">
                         <span>Descuento</span>
                         <span>
                             {formatCurrency(

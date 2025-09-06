@@ -106,6 +106,16 @@ export default function Comanda({
             </div>
         ) : null;
 
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get("auto_print") === "1") {
+            window.print();
+            setTimeout(() => {
+                window.close();
+            }, 500);
+        }
+    }, []);
+
     return (
         <div className="w-[280px] max-w-full text-xs print:w-[280px]">
             {/* Encabezado */}

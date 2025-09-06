@@ -10,7 +10,6 @@ import { CobrarOrdenModal } from "./components/CobrarOrdenModal";
 import Pusher from "pusher-js";
 import { usePusherChannel } from "@/hooks/usePusherChannel";
 import { useRecentHighlights } from "@/hooks/useRecentHighlights";
-import { printFromUrl } from "@/utils/printFromUrl";
 
 interface Props extends PageProps {
     orders: Order[];
@@ -46,8 +45,8 @@ export default function OrdenesPendientesPage({
             );
 
             markRecent(newOrder.id);
-            const url = route("orders.comanda", newOrder.id);
-            printFromUrl(url);
+            const url = route("orders.comanda", newOrder.id) + "?auto_print=1";
+            window.open(url, "_blank");
         },
     });
 
