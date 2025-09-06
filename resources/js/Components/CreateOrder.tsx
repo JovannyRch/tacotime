@@ -256,7 +256,7 @@ export const CreateOrder = ({
                         <SheetHeader>
                             <SheetTitle>Resumen de orden</SheetTitle>
                         </SheetHeader>
-                        <div className="mt-4 space-y-3">
+                        <div className="mt-4 space-y-3 max-h-[75vh] overflow-y-auto">
                             {orderItems.map((item, index) => (
                                 <div
                                     key={index}
@@ -264,6 +264,10 @@ export const CreateOrder = ({
                                 >
                                     <div className="flex-1">
                                         <p className="font-semibold">
+                                            <small className="text-gray-400">
+                                                #{index + 1}
+                                            </small>
+                                            {" - "}
                                             {item.quantity} x {item.name}
                                         </p>
                                         {item.complements?.length > 0 && (
