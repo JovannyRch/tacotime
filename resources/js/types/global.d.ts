@@ -1,7 +1,7 @@
-import { PageProps as InertiaPageProps } from '@inertiajs/core';
-import { AxiosInstance } from 'axios';
-import { route as ziggyRoute } from 'ziggy-js';
-import { PageProps as AppPageProps } from './';
+import { PageProps as InertiaPageProps } from "@inertiajs/core";
+import { AxiosInstance } from "axios";
+import { route as ziggyRoute } from "ziggy-js";
+import { PageProps as AppPageProps } from "./";
 
 declare global {
     interface Window {
@@ -12,7 +12,7 @@ declare global {
     var route: typeof ziggyRoute;
 }
 
-declare module '@inertiajs/core' {
+declare module "@inertiajs/core" {
     interface PageProps extends InertiaPageProps, AppPageProps {}
 }
 
@@ -97,7 +97,7 @@ interface User {
     id?: number;
     name: string;
     email: string;
-    role: 'mesero' | 'admin' | 'ordenes';
+    role: "mesero" | "admin" | "ordenes";
 }
 
 type LaravelLink = {
@@ -122,7 +122,7 @@ interface PaginatedResponse<T> {
     total: number;
 }
 
-type OrderStatus = 'pagado' | 'pendiente' | 'cancelado' | 'preparando' | string;
+type OrderStatus = "pagado" | "pendiente" | "cancelado" | "preparando" | string;
 
 interface Order {
     id: number;
@@ -164,11 +164,11 @@ interface EditableOrderProduct extends Product {
     };
 }
 
-type UserRole = 'mesero' | 'caja' | 'admin';
+type UserRole = "mesero" | "caja" | "admin";
 
-type PaymentMethod = 'cash' | 'card' | 'transfer';
+type PaymentMethod = "cash" | "card" | "transfer";
 
-type DiscountType = '' | 'PERCENT' | 'FIXED';
+type DiscountType = "" | "PERCENT" | "FIXED";
 
 export interface Caja {
     id: number;
@@ -187,6 +187,9 @@ export interface Caja {
         card: number;
         transfer: number;
     };
+
+    created_at: string;
+    updated_at: string;
 
     // Lista de pagos registrados en esta sesión
     payments: Payment[];
@@ -251,15 +254,15 @@ export interface ModifierAssignableCombo {
 }
 
 export type ModifierAssignable =
-    | { type: 'product'; data: ModifierAssignableProduct }
-    | { type: 'category'; data: ModifierAssignableCategory }
-    | { type: 'combo'; data: ModifierAssignableCombo };
+    | { type: "product"; data: ModifierAssignableProduct }
+    | { type: "category"; data: ModifierAssignableCategory }
+    | { type: "combo"; data: ModifierAssignableCombo };
 
 export interface ModifierFormData {
     name: string;
 }
 
-export type AssignableType = 'product' | 'category' | 'combo';
+export type AssignableType = "product" | "category" | "combo";
 
 export interface AssignableOption {
     id: number;

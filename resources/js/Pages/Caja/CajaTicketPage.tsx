@@ -1,6 +1,6 @@
-import { Caja, Payment } from '@/types/global';
-import { formatCurrency, getTableNameOrDefault } from '@/utils/utils';
-import { useEffect } from 'react';
+import { Caja, Payment } from "@/types/global";
+import { formatCurrency, getTableNameOrDefault } from "@/utils/utils";
+import { useEffect } from "react";
 
 interface Props {
     session: Caja;
@@ -12,11 +12,11 @@ export default function CajaTicketPage({ session }: Props) {
     }, []);
 
     return (
-        <div className="mx-auto max-w-xs p-4 font-mono text-sm print:text-xs">
-            <h1 className="mb-2 text-center text-lg font-bold">Taco Time 🌮</h1>
+        <div className="max-w-xs p-4 mx-auto font-mono text-sm print:text-xs">
+            <h1 className="mb-2 text-lg font-bold text-center">Taco Time 🌮</h1>
             <p>Caja ID: {session.id}</p>
-            <p>Apertura: {new Date(session.opened_at).toLocaleString()}</p>
-            <p>Cierre: {new Date(session.closed_at!).toLocaleString()}</p>
+            <p>Apertura: {new Date(session.created_at).toLocaleString()}</p>
+            <p>Cierre: {new Date(session.updated_at!).toLocaleString()}</p>
             <hr className="my-2" />
 
             <p className="mb-1 font-bold uppercase">Órdenes cobradas:</p>
@@ -29,17 +29,17 @@ export default function CajaTicketPage({ session }: Props) {
                     : amount;
 
                 const discountTypeLabel =
-                    p.discount_type === 'PERCENT'
+                    p.discount_type === "PERCENT"
                         ? `${Number(p.discount_value ?? 0)}%`
-                        : p.discount_type === 'FIXED'
+                        : p.discount_type === "FIXED"
                           ? `${formatCurrency(Number(p.discount_value ?? 0))}`
                           : null;
 
                 return (
-                    <div className="mb-2 flex flex-col gap-2" key={p.id}>
+                    <div className="flex flex-col gap-2 mb-2" key={p.id}>
                         <div className="flex justify-between font-semibold">
                             <span>
-                                {`Orden #${p.order?.id ?? '—'} ${p?.order ? getTableNameOrDefault(p.order) : ''}`}
+                                {`Orden #${p.order?.id ?? "—"} ${p?.order ? getTableNameOrDefault(p.order) : ""}`}
                             </span>
                             <span>{formatCurrency(amount)}</span>
                         </div>
@@ -53,9 +53,9 @@ export default function CajaTicketPage({ session }: Props) {
                                     {discountTypeLabel && (
                                         <span>
                                             (
-                                            {p.discount_type === 'PERCENT'
-                                                ? 'Porcentaje'
-                                                : 'Monto fijo'}
+                                            {p.discount_type === "PERCENT"
+                                                ? "Porcentaje"
+                                                : "Monto fijo"}
                                             : {discountTypeLabel})
                                         </span>
                                     )}
@@ -66,17 +66,17 @@ export default function CajaTicketPage({ session }: Props) {
                                     )}
                                 </div>
                                 <span className="ml-2">
-                                    Antes:{' '}
+                                    Antes:{" "}
                                     {formatCurrency(originalBeforeDiscount)}
                                 </span>
                             </div>
                         )}
 
-                        {p.method === 'cash' && (
+                        {p.method === "cash" && (
                             <div className="text-xs text-gray-500">
-                                Recibido:{' '}
-                                {formatCurrency(Number(p.received_amount ?? 0))}{' '}
-                                · Cambio:{' '}
+                                Recibido:{" "}
+                                {formatCurrency(Number(p.received_amount ?? 0))}{" "}
+                                · Cambio:{" "}
                                 {formatCurrency(Number(p.change ?? 0))}
                             </div>
                         )}
@@ -84,13 +84,13 @@ export default function CajaTicketPage({ session }: Props) {
                         <div className="text-sm text-gray-700">
                             {p.order?.resume}
                         </div>
-                        <div className="h-px w-full bg-gray-200" />
+                        <div className="w-full h-px bg-gray-200" />
                     </div>
                 );
             })}
 
             <hr className="my-2" />
-            <div className="mt-2 flex justify-between font-bold">
+            <div className="flex justify-between mt-2 font-bold">
                 <span>Total ordenes: </span>
                 <span>{session?.payments?.length ?? 0}</span>
             </div>
@@ -103,7 +103,7 @@ export default function CajaTicketPage({ session }: Props) {
                 <li>Transferencia: {formatCurrency(session.total_transfer)}</li>
                 <li>
                     <b>
-                        Total caja:{' '}
+                        Total caja:{" "}
                         {formatCurrency(
                             session.total_cash +
                                 session.total_card +
