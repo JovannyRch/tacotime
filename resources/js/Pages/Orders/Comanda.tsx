@@ -1,7 +1,14 @@
 // Comanda.tsx
 import { Order } from "@/types/global";
 import { format } from "date-fns";
-import { useEffect } from "react";
+import {
+    JSXElementConstructor,
+    Key,
+    ReactElement,
+    ReactNode,
+    ReactPortal,
+    useEffect,
+} from "react";
 
 export default function Comanda({
     order,
@@ -22,6 +29,66 @@ export default function Comanda({
         ? "Para llevar"
         : (order.table?.name ?? getTableNameOrDefault(order));
 
+    const renderProductsOfCombo = (orderItem: {
+        id?: number;
+        name?: string;
+        pivot?: {
+            quantity: number;
+            unit_price: number;
+            complements?: string;
+            notes?: string;
+        };
+        products?: any;
+    }) => {
+        if (orderItem.products && orderItem.products.length > 0) {
+            return (
+                <div className="mt-1 ml-2">
+                    {orderItem.products.map(
+                        (p: {
+                            id: Key | null | undefined;
+                            pivot: {
+                                quantity:
+                                    | string
+                                    | number
+                                    | boolean
+                                    | ReactElement<
+                                          any,
+                                          string | JSXElementConstructor<any>
+                                      >
+                                    | Iterable<ReactNode>
+                                    | ReactPortal
+                                    | null
+                                    | undefined;
+                                notes: any;
+                            };
+                            name:
+                                | string
+                                | number
+                                | boolean
+                                | ReactElement<
+                                      any,
+                                      string | JSXElementConstructor<any>
+                                  >
+                                | Iterable<ReactNode>
+                                | ReactPortal
+                                | null
+                                | undefined;
+                        }) => (
+                            <div
+                                key={p.id}
+                                className="whitespace-pre-wrap text-[10px] leading-4"
+                            >
+                                - {p.pivot.quantity} x {p.name}{" "}
+                                {p.pivot?.notes ? `(${p.pivot.notes})` : ""}
+                            </div>
+                        ),
+                    )}
+                </div>
+            );
+        }
+        return null;
+    };
+
     const renderComplements = (c?: string | string[]) => {
         if (!c || (Array.isArray(c) && c.length === 0)) return null;
         const text = Array.isArray(c) ? c.join(", ") : c;
@@ -31,13 +98,6 @@ export default function Comanda({
             </div>
         );
     };
-
-    useEffect(() => {
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get("auto_print") === "1") {
-            window.print();
-        }
-    }, []);
 
     const renderNotes = (n?: string | null) =>
         n ? (
@@ -81,6 +141,7 @@ export default function Comanda({
                                     <div className="font-extrabold leading-5 uppercase">
                                         {item.name}
                                     </div>
+                                    {renderProductsOfCombo(item)}
                                     {renderComplements(item.pivot.complements)}
                                     {renderNotes(item.pivot.notes)}
                                 </div>
