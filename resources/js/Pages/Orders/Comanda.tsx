@@ -19,7 +19,15 @@ export default function Comanda({
     getTableNameOrDefault: (o: Order) => string;
     businessName?: string;
 }) {
-    const items = [...(order.products || []), ...(order.combos || [])];
+    const urlParams = new URLSearchParams(window.location.search);
+    const items = [
+        ...(order.products || []).slice(
+            Number(urlParams.get("lastProductIndex") || 0),
+        ),
+        ...(order.combos || []).slice(
+            Number(urlParams.get("lastComboIndex") || 0),
+        ),
+    ];
 
     const hora = order.created_at
         ? format(new Date(order.created_at), "HH:mm")
@@ -107,7 +115,6 @@ export default function Comanda({
         ) : null;
 
     useEffect(() => {
-        const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get("auto_print") === "1") {
             window.print();
             setTimeout(() => {

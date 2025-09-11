@@ -21,6 +21,8 @@ class MeseroController extends Controller
     {
         $table = Table::findOrFail($table_id);
 
+        $order = $table->currentOrder();
+
         $categories = Category::with([
             'products' => function ($query) {
                 $query->where('is_available', true)->with('modifiers');
@@ -40,6 +42,7 @@ class MeseroController extends Controller
             'table' => $table,
             'categories' => $categories,
             'combos' => $combos,
+            'order' => $order,
         ]);
     }
 }

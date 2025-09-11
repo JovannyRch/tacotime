@@ -53,7 +53,7 @@ interface Props {
 
 const combosCategory = {
     id: 0,
-    name: "Combos",
+    name: "COMBOS",
     products: [] as Product[],
 };
 
@@ -172,6 +172,14 @@ export const CreateOrder = ({
     return (
         <>
             <div className="p-3 pb-20">
+                <div className="flex justify-start mb-4">
+                    <Button
+                        variant="secondary"
+                        onClick={() => window.history.back()}
+                    >
+                        ← Regresar
+                    </Button>
+                </div>
                 <div className="flex items-center justify-between mb-4">
                     <h1 className="text-lg font-bold">
                         {isDelivery

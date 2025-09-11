@@ -156,6 +156,11 @@ interface Order {
     is_delivery?: boolean;
 }
 
+interface OrderWithLastIndexes extends Order {
+    lastProductIndex: number;
+    lastComboIndex: number;
+}
+
 interface EditableOrderProduct extends Product {
     _editData?: {
         quantity: number;

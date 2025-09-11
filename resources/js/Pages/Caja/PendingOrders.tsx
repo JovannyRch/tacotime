@@ -7,9 +7,8 @@ import { router } from "@inertiajs/react";
 import { DollarSign, Eye, List, Printer } from "lucide-react";
 import { useEffect, useState } from "react";
 import { CobrarOrdenModal } from "./components/CobrarOrdenModal";
-import Pusher from "pusher-js";
-import { usePusherChannel } from "@/hooks/usePusherChannel";
 import { useRecentHighlights } from "@/hooks/useRecentHighlights";
+import { useOrderCreated } from "@/hooks/useOrderCreated";
 
 interface Props extends PageProps {
     orders: Order[];
@@ -34,19 +33,14 @@ export default function OrdenesPendientesPage({
         router.reload();
     };
 
-    usePusherChannel("orders", {
-        "order.created": (payload: Order) => {
-            const newOrder = payload;
-
+    useOrderCreated({
+        handleNewOrder: (newOrder) => {
             setOrders((prev) =>
                 prev.some((o) => o.id === newOrder.id)
-                    ? prev
+                    ? prev.map((o) => (o.id === newOrder.id ? newOrder : o))
                     : [newOrder, ...prev],
             );
-
             markRecent(newOrder.id);
-            const url = route("orders.comanda", newOrder.id) + "?auto_print=1";
-            window.open(url, "_blank");
         },
     });
 
@@ -87,7 +81,14 @@ export default function OrdenesPendientesPage({
                                 </Button>
                                 <div className="flex gap-1">
                                     <Button
-                                        onClick={() => cobrarOrden(order)}
+                                        onClick={() =>
+                                            router.visit(
+                                                route(
+                                                    "caja.orders.show",
+                                                    order.id,
+                                                ),
+                                            )
+                                        }
                                         variant="secondary"
                                         size="icon"
                                     >

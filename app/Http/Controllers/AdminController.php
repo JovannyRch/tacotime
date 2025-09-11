@@ -35,11 +35,7 @@ class AdminController extends Controller
             ->get(['id', 'table_id', 'total', 'status', 'created_at']);
 
 
-        $tables = Table::with(['orders' => function ($query) {
-            $query->whereDate('created_at', now())
-                ->whereIn('status', ['pendiente', 'en_proceso', 'pagado'])
-                ->latest();
-        }])->get(['id', 'name']);
+        $tables = Table::all(['id', 'name', 'status']);
 
 
 

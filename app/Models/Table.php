@@ -12,4 +12,9 @@ class Table extends Model
     {
         return $this->hasMany(Order::class);
     }
+
+    public function currentOrder()
+    {
+        return $this->orders()->whereIn('status', ['pendiente'])->latest()->first();
+    }
 }

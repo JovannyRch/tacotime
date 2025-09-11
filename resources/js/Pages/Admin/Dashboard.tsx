@@ -1,10 +1,11 @@
-import TableViewWrapper from '@/Components/TableViewWrapper';
-import { Button } from '@/Components/ui/button';
-import AdminLayout from '@/Layouts/AdminLayout';
-import { formatCurrency, formatDate, OrderStatusMapper } from '@/utils/utils';
+import TableViewWrapper from "@/Components/TableViewWrapper";
+import { Button } from "@/Components/ui/button";
+import AdminLayout from "@/Layouts/AdminLayout";
+import { ITable } from "@/types/global";
+import { formatCurrency, formatDate, OrderStatusMapper } from "@/utils/utils";
 
-import { Link } from '@inertiajs/react';
-import { ChevronRight } from 'lucide-react';
+import { Link } from "@inertiajs/react";
+import { ChevronRight } from "lucide-react";
 import {
     Bar,
     BarChart,
@@ -13,7 +14,7 @@ import {
     Tooltip,
     XAxis,
     YAxis,
-} from 'recharts';
+} from "recharts";
 interface TopProduct {
     name: string;
     total_sold: number;
@@ -42,14 +43,7 @@ interface Props {
     };
     topProducts: TopProduct[];
     recentOrders: RecentOrder[];
-    tables: TableStatus[];
-}
-
-interface TableStatus {
-    id: number;
-    name: string;
-    orders: { status: string }[];
-    tables: TableStatus[];
+    tables: ITable[];
 }
 
 export default function Dashboard({
@@ -84,7 +78,7 @@ export default function Dashboard({
                         value={
                             summary.active_session
                                 ? `#${summary.active_session.id} - ${summary.active_session.user.name}`
-                                : 'Ninguna'
+                                : "Ninguna"
                         }
                     />
                 </div>
@@ -94,9 +88,9 @@ export default function Dashboard({
                         <h2 className="mb-2 text-lg font-semibold">
                             🕒 Órdenes recientes
                         </h2>
-                        <div className="overflow-x-auto rounded-lg border bg-white shadow-sm">
+                        <div className="overflow-x-auto bg-white border rounded-lg shadow-sm">
                             <table className="min-w-full text-sm">
-                                <thead className="bg-gray-100 text-left">
+                                <thead className="text-left bg-gray-100">
                                     <tr>
                                         <th className="px-4 py-2">Orden</th>
                                         <th className="px-4 py-2">Mesa</th>
@@ -113,7 +107,7 @@ export default function Dashboard({
                                                 #{order.id}
                                             </td>
                                             <td className="px-4 py-2">
-                                                {order.table?.name || '—'}
+                                                {order.table?.name || "—"}
                                             </td>
                                             <td className="px-4 py-2">
                                                 {formatCurrency(order.total)}
@@ -130,7 +124,7 @@ export default function Dashboard({
                                                 <Button variant="ghost" asChild>
                                                     <Link
                                                         href={route(
-                                                            'admin.orders.show',
+                                                            "admin.orders.show",
                                                             order.id,
                                                         )}
                                                         className="text-sm text-blue-600 hover:underline"
@@ -152,16 +146,12 @@ export default function Dashboard({
                         🍽️ Estado de las mesas
                     </h2>
                     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-                        {tables.map((table: TableStatus) => {
-                            const latestOrder = table.orders[0];
-                            const status = latestOrder?.status || 'disponible';
-                            let bg = 'bg-green-100 text-green-800';
-                            if (status === 'pendiente')
-                                bg = 'bg-yellow-100 text-yellow-800';
-                            else if (status === 'en_proceso')
-                                bg = 'bg-blue-100 text-blue-800';
-                            else if (status === 'pagado')
-                                bg = 'bg-gray-100 text-gray-700';
+                        {tables.map((table: ITable) => {
+                            const status = table?.status || "disponible";
+                            let bg =
+                                "bg-green-100 text-green-800 hover:bg-green-200";
+                            if (status === "ocupada")
+                                bg = "bg-red-100 text-red-800 hover:bg-red-200";
 
                             return (
                                 <div
@@ -183,7 +173,7 @@ export default function Dashboard({
                     <h2 className="mb-2 text-lg font-semibold">
                         🥇 Productos más vendidos (hoy)
                     </h2>
-                    <div className="h-72 w-full rounded-lg border bg-white p-4 shadow-sm">
+                    <div className="w-full p-4 bg-white border rounded-lg shadow-sm h-72">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={topProducts}>
                                 <CartesianGrid strokeDasharray="3 3" />
@@ -202,7 +192,7 @@ export default function Dashboard({
 
 function Card({ title, value }: { title: string; value: string | number }) {
     return (
-        <div className="rounded-lg border bg-white p-4 shadow-sm">
+        <div className="p-4 bg-white border rounded-lg shadow-sm">
             <p className="text-sm text-muted-foreground">{title}</p>
             <h2 className="text-lg font-bold">{value}</h2>
         </div>

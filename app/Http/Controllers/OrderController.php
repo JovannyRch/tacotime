@@ -9,6 +9,7 @@ use App\Models\Product;
 use App\Models\Table;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class OrderController extends Controller
@@ -51,96 +52,139 @@ class OrderController extends Controller
         ]);
     }
 
+
     public function store(Request $request)
     {
+        $validated = $request->validate([
+            'table_id' => 'nullable|exists:tables,id',
+            'products' => 'array',
+            'products.*.id' => 'required|exists:products,id',
+            'products.*.quantity' => 'required|integer|min:1',
+            'products.*.price' => 'required|numeric|min:0',
+            'products.*.complements' => 'nullable|string',
+            'products.*.notes' => 'nullable|string',
+            'combos' => 'array',
+            'combos.*.id' => 'required|exists:combos,id',
+            'combos.*.quantity' => 'required|integer|min:1',
+            'combos.*.price' => 'required|numeric|min:0',
+            'combos.*.complements' => 'nullable|string',
+            'combos.*.notes' => 'nullable|string',
+            'is_delivery' => 'nullable|boolean',
+        ]);
+
+        $user = Auth::user();
+
+        // Totales de lo que VIENE en la petición (para sumar a una orden existente)
+        $incomingProductsTotal = collect($validated['products'] ?? [])
+            ->sum(fn($p) => $p['price'] * $p['quantity']);
+        $incomingCombosTotal = collect($validated['combos'] ?? [])
+            ->sum(fn($c) => $c['price'] * $c['quantity']);
+        $incomingTotal = $incomingProductsTotal + $incomingCombosTotal;
+
+        $lastProductIndex = 0;
+        $lastComboIndex = 0;
+
         try {
-            $validated = $request->validate([
-                'table_id' => 'nullable|exists:tables,id',
-                'products' => 'array',
-                'products.*.id' => 'required|exists:products,id',
-                'products.*.quantity' => 'required|integer|min:1',
-                'products.*.price' => 'required|numeric|min:0',
-                'products.*.complements' => 'nullable|string',
-                'products.*.notes' => 'nullable|string',
-                'combos' => 'array',
-                'combos.*.id' => 'required|exists:combos,id',
-                'combos.*.quantity' => 'required|integer|min:1',
-                'combos.*.price' => 'required|numeric|min:0',
-                'combos.*.complements' => 'nullable|string',
-                'combos.*.notes' => 'nullable|string',
-                'is_delivery' => 'nullable|boolean',
-            ]);
-
-            $user = Auth::user();
-
-            // Calcular total
-            $productTotal = collect($validated['products'] ?? [])->sum(fn($p) => $p['price'] * $p['quantity']);
-            $comboTotal = collect($validated['combos'] ?? [])->sum(fn($c) => $c['price'] * $c['quantity']);
-            $total = $productTotal + $comboTotal;
+            $order = DB::transaction(function () use ($validated, $user, $incomingTotal, &$lastProductIndex, &$lastComboIndex) {
+                $tableId = $validated['table_id'] ?? null;
+                $isDelivery = (bool) ($validated['is_delivery'] ?? false);
 
 
-            // Crear orden
-            $order = Order::create([
-                'user_id' => $user->id,
-                'table_id' => $validated['table_id'] ?? null,
-                'status' => 'pendiente',
-                'is_delivery' => $validated['is_delivery'] ?? false,
-                'total' => $total,
-            ]);
+                $openStatuses = ['pendiente', 'preparando'];
 
-            // Asociar productos
-            $productsToAttach = collect($validated['products'] ?? [])->mapWithKeys(fn($p) => [
-                $p['id'] => [
-                    'quantity' => $p['quantity'],
-                    'unit_price' => $p['price'],
-                    'complements' => $p['complements'] ?? null,
-                    'notes' => $p['notes'] ?? null,
-                ]
-            ]);
-            $order->products()->sync($productsToAttach);
+                $order = null;
+                if ($tableId && !$isDelivery) {
+                    $order = \App\Models\Order::query()
+                        ->where('table_id', $tableId)
+                        ->whereIn('status', $openStatuses)
+                        ->latest('id')
+                        ->first();
+                }
 
-            // Asociar combos
-            $combosToAttach = collect($validated['combos'] ?? [])->mapWithKeys(fn($c) => [
-                $c['id'] => [
-                    'quantity' => $c['quantity'],
-                    'unit_price' => $c['price'],
-                    'complements' => $c['complements'] ?? null,
-                    'notes' => $c['notes'] ?? null,
-                ]
-            ]);
-            $order->combos()->sync($combosToAttach);
+                if (!$order) {
+                    $order = \App\Models\Order::create([
+                        'user_id'     => $user->id,
+                        'table_id'    => $tableId,
+                        'status'      => 'pendiente',
+                        'is_delivery' => $isDelivery,
+                        'total'       => $incomingTotal,
+                    ]);
+                } else {
 
-            if ($order->table) {
-                $order->table->update(['status' => 'ocupada']);
-            }
-
-            event(new OrderCreated($order));
+                    if ($incomingTotal > 0) {
+                        $order->increment('total', $incomingTotal);
+                        $order->refresh();
+                    }
+                }
 
 
-            if (Auth::user()->role === 'mesero') {
+                $lastProductIndex = $order->products()->count();
+                $lastComboIndex = $order->combos()->count();
+
+                foreach (collect($validated['products'] ?? []) as $p) {
+                    $order->products()->attach($p['id'], [
+                        'quantity'    => $p['quantity'],
+                        'unit_price'  => $p['price'],
+                        'complements' => $p['complements'] ?? null,
+                        'notes'       => $p['notes'] ?? null,
+                        'created_at'  => now(),
+                        'updated_at'  => now(),
+                    ]);
+                }
+
+                foreach (collect($validated['combos'] ?? []) as $c) {
+                    $order->combos()->attach($c['id'], [
+                        'quantity'    => $c['quantity'],
+                        'unit_price'  => $c['price'],
+                        'complements' => $c['complements'] ?? null,
+                        'notes'       => $c['notes'] ?? null,
+                        'created_at'  => now(),
+                        'updated_at'  => now(),
+                    ]);
+                }
+
+                // Si hay mesa asociada, marcar ocupada
+                if ($order->table) {
+                    $order->table->update(['status' => 'ocupada']);
+                }
+
+                return $order;
+            });
+
+
+            event(new \App\Events\OrderCreated($order, $lastProductIndex, $lastComboIndex));
+
+            // Redirecciones por rol
+            if ($user->role === 'mesero') {
                 return redirect()->route('mesero.dashboard')->with([
-                    'success' => 'Orden creada exitosamente.',
+                    'success' => $order->wasRecentlyCreated
+                        ? 'Orden creada exitosamente.'
+                        : 'Productos agregados a la orden existente.',
                     'id' => $order->id
                 ]);
             }
-            if (Auth::user()->role === 'caja') {
+            if ($user->role === 'caja') {
                 return redirect()->route('caja.dashboard')->with([
-                    'success' => 'Orden creada exitosamente.',
+                    'success' => $order->wasRecentlyCreated
+                        ? 'Orden creada exitosamente.'
+                        : 'Productos agregados a la orden existente.',
                     'id' => $order->id
                 ]);
             }
+
             return redirect()->route('orders.index')->with([
-                'success' => 'Orden creada exitosamente.',
+                'success' => $order->wasRecentlyCreated
+                    ? 'Orden creada exitosamente.'
+                    : 'Productos agregados a la orden existente.',
                 'id' => $order->id
             ]);
         } catch (\Throwable $th) {
-
-            $errorMessage = $th->getMessage();
             return response()->json([
-                'message' => 'Error al crear la orden. Por favor, inténtalo de nuevo más tarde. ' . $errorMessage
+                'message' => 'Error al crear/agregar a la orden. ' . $th->getMessage()
             ], 500);
         }
     }
+
 
     public function updateStatus(Request $request, Order $order)
     {
