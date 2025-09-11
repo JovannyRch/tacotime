@@ -62,13 +62,21 @@ class CajaController extends Controller
     public function createOrder()
     {
 
-        $categories = Category::with(['products' => function ($query) {
-            $query->where('is_available', true);
-        }])->get();
+        $categories = Category::with([
+            'products' => function ($query) {
+                $query->where('is_available', true)->with('modifiers');
+            },
+            'modifiers',
+        ])->get();
+
+        $combos = Combo::with([
+            'products.modifiers',
+            'products.category.modifiers'
+        ])->get();
 
         return Inertia::render('Caja/Order/Create', [
             'categories' => $categories,
-            'combos' => Combo::all(),
+            'combos' => $combos,
         ]);
     }
 }

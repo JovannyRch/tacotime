@@ -1,6 +1,6 @@
-import { CreateOrder } from '@/Components/CreateOrder';
-import CajeroLayout from '@/Layouts/CajaLayout';
-import { CategoryWithProducts, Combo, ITable } from '@/types/global';
+import { CreateOrder } from "@/Components/CreateOrder";
+import CajeroLayout from "@/Layouts/CajaLayout";
+import { CategoryWithProducts, Combo, ITable } from "@/types/global";
 
 interface Props {
     table: ITable;
