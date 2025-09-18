@@ -30,6 +30,18 @@ class CajaController extends Controller
     }
 
 
+    public function mesas()
+    {
+        $tables = Table::orderBy('name')->get();
+        $tables->each(function ($table) {
+            $table->currentOrder = $table->currentOrder();
+        });
+
+        return Inertia::render('Caja/Mesas', [
+            'tables' => $tables
+        ]);
+    }
+
     public function ticket($sessionId)
     {
         $session = CashRegisterSession::with(['payments.order'])

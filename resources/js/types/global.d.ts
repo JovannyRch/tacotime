@@ -86,6 +86,7 @@ interface ITable {
     id: number;
     name: string;
     status: string;
+    currentOrder?: Order | null;
 }
 
 interface ComboProduct {

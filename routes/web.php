@@ -81,6 +81,7 @@ Route::middleware(['auth', 'role:mesero'])->prefix('mesero')->name('mesero.')->g
 Route::middleware(['auth', 'role:caja'])->prefix('caja')->name('caja.')->group(function () {
     Route::get('', [CajaController::class, 'index'])->name('dashboard');
     Route::get('/ordenes', [CajaController::class, 'pendingForCashier']);
+    Route::get('/mesas', [CajaController::class, 'mesas']);
     Route::get('/ordenes/{order}', [CajaController::class, 'showOrder'])->name('orders.show');
     Route::get('/ordenar', [CajaController::class, 'createOrder'])->name('caja.order');
 

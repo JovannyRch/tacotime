@@ -3,7 +3,7 @@ import MeseroLayout from "@/Layouts/MeseroLayout";
 import { cn } from "@/lib/utils";
 import { PageProps } from "@/types";
 import { ITable } from "@/types/global";
-import { Head, Link, usePage } from "@inertiajs/react";
+import { Head, Link } from "@inertiajs/react";
 import { CircleCheck, CircleX } from "lucide-react";
 import { useEffect, useState } from "react";
 
