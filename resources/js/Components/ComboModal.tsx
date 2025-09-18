@@ -1,13 +1,13 @@
-import { Button } from '@/Components/ui/button';
+import { Button } from "@/Components/ui/button";
 import {
     Dialog,
     DialogContent,
     DialogHeader,
     DialogTitle,
-} from '@/Components/ui/dialog';
-import { Combo, Product } from '@/types/global';
-import { formatCurrency, getComplementOptions } from '@/utils/utils';
-import { useState } from 'react';
+} from "@/Components/ui/dialog";
+import { Combo, Product } from "@/types/global";
+import { formatCurrency, getComplementOptions } from "@/utils/utils";
+import { useState } from "react";
 
 interface ComboModalProps {
     open: boolean;
@@ -19,6 +19,7 @@ interface ComboModalProps {
         complements: string;
         quantity: number;
         note: string;
+        comboModifiers: string[];
     }) => void;
     combo: Combo;
 }
@@ -35,10 +36,10 @@ function buildComboComplements(
                     : undefined;
             if (!modifiers || modifiers.length === 0) return null;
 
-            return `${product.name}: ${modifiers.join(', ')}`;
+            return `${product.name}: ${modifiers.join(", ")}`;
         })
         .filter(Boolean)
-        .join(' | ');
+        .join(" | ");
 }
 
 export const ComboModal = ({
@@ -48,11 +49,13 @@ export const ComboModal = ({
     combo,
 }: ComboModalProps) => {
     const [quantity, setQuantity] = useState(1);
-    const [note, setNote] = useState('');
+    const [note, setNote] = useState("");
 
     const [selectedModifiers, setSelectedModifiers] = useState<{
         [productId: number]: string[];
     }>({});
+
+    const [complements, setComplements] = useState<string[]>([]);
 
     const includedProducts = combo.products ?? [];
 
@@ -61,7 +64,7 @@ export const ComboModal = ({
             return;
         }
 
-        const complements = buildComboComplements(
+        const productComplements = buildComboComplements(
             selectedModifiers,
             includedProducts,
         );
@@ -71,12 +74,22 @@ export const ComboModal = ({
             name: combo.name,
             price: combo.price,
             quantity,
-            complements: complements,
+            complements: productComplements,
             note,
+            comboModifiers: complements,
         });
         onClose();
         setQuantity(1);
-        setNote('');
+        setNote("");
+    };
+    const options = combo.modifiers ?? [];
+
+    const toggleComplement = (opt: { id: number; name: string }) => {
+        setComplements((prev) =>
+            prev.includes(opt.name)
+                ? prev.filter((o) => o !== opt.name)
+                : [...prev, opt.name],
+        );
     };
 
     return (
@@ -99,7 +112,7 @@ export const ComboModal = ({
                         </label>
                         <input
                             type="number"
-                            className="mt-1 w-full rounded border p-2"
+                            className="w-full p-2 mt-1 border rounded"
                             value={quantity}
                             min={1}
                             onChange={(e) =>
@@ -107,6 +120,40 @@ export const ComboModal = ({
                             }
                         />
                     </div>
+
+                    {options.length > 0 && (
+                        <div>
+                            <label className="text-sm font-semibold">
+                                Cortesías
+                            </label>
+                            <div className="flex flex-wrap gap-2 mt-2">
+                                {options.map((opt) => (
+                                    <Button
+                                        key={opt.id}
+                                        variant={
+                                            complements.includes(opt.name)
+                                                ? "secondary"
+                                                : "outline"
+                                        }
+                                        className={
+                                            !complements.includes(opt.name)
+                                                ? "bg-white text-gray-900 hover:bg-gray-100"
+                                                : ""
+                                        }
+                                        onClick={() =>
+                                            toggleComplement({
+                                                id: opt.id!,
+                                                name: opt.name,
+                                            })
+                                        }
+                                        size="sm"
+                                    >
+                                        {opt.name}
+                                    </Button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
                     {includedProducts.length > 0 && (
                         <div className="space-y-4">
@@ -128,7 +175,7 @@ export const ComboModal = ({
                     <div>
                         <label className="text-sm font-semibold">Notas</label>
                         <textarea
-                            className="mt-1 w-full rounded border p-2"
+                            className="w-full p-2 mt-1 border rounded"
                             rows={2}
                             placeholder="Ej. Combo sin bebida, todo bien dorado..."
                             value={note}
@@ -136,7 +183,7 @@ export const ComboModal = ({
                         />
                     </div>
 
-                    <Button onClick={handleConfirm} className="mt-2 w-full">
+                    <Button onClick={handleConfirm} className="w-full mt-2">
                         Agregar combo
                     </Button>
                 </div>
@@ -159,7 +206,7 @@ export const ComboModifiers = ({
     const options = getComplementOptions(product?.category, product);
     return (
         <div className="space-y-4">
-            <div key={product.id} className="rounded border p-3">
+            <div key={product.id} className="p-3 border rounded">
                 <p className="mb-2 font-semibold">{product.name}</p>
                 <ComboModifier
                     productId={product.id!}
@@ -208,11 +255,11 @@ export const ComboModifier = ({
                                 };
                             });
                         }}
-                        variant={isSelected ? 'secondary' : 'outline'}
+                        variant={isSelected ? "secondary" : "outline"}
                         className={
                             !isSelected
-                                ? 'bg-white text-gray-900 hover:bg-gray-100'
-                                : ''
+                                ? "bg-white text-gray-900 hover:bg-gray-100"
+                                : ""
                         }
                     >
                         {modifier}

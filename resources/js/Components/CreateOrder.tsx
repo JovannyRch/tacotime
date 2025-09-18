@@ -42,6 +42,7 @@ type OrderCombo = {
     }[];
     note?: string;
     complements?: string;
+    comboModifiers?: string[];
 };
 
 interface Props {
@@ -66,6 +67,7 @@ export const CreateOrder = ({
     const [activeCategory, setActiveCategory] = useState<CategoryWithProducts>(
         categories[0],
     );
+
     const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
     const [openSheet, setOpenSheet] = useState(false);
     const [editIndex, setEditIndex] = useState<number | null>(null);
@@ -142,9 +144,11 @@ export const CreateOrder = ({
                 price: combo.price,
                 notes: combo.note || null,
                 complements: combo.complements || null,
+                combo_modifiers: combo.comboModifiers || null,
             })),
             is_delivery: isDelivery,
         };
+
         router.visit("/orders", {
             method: "post",
             data,
@@ -283,6 +287,7 @@ export const CreateOrder = ({
                                                 {item.complements.join(", ")}
                                             </p>
                                         )}
+
                                         {item.note && (
                                             <p className="text-sm italic text-muted-foreground">
                                                 "{item.note}"
@@ -328,6 +333,16 @@ export const CreateOrder = ({
                                             {combo.quantity} x {combo.name} -
                                             COMBO
                                         </p>
+
+                                        {combo.comboModifiers && (
+                                            <p className="text-sm italic text-muted-foreground">
+                                                Cortesías:{" "}
+                                                {combo.comboModifiers.join(
+                                                    ", ",
+                                                )}
+                                            </p>
+                                        )}
+
                                         {combo.note && (
                                             <p className="text-sm italic text-muted-foreground">
                                                 "{combo.note}"

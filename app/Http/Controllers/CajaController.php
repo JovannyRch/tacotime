@@ -72,7 +72,7 @@ class CajaController extends Controller
         $combos = Combo::with([
             'products.modifiers',
             'products.category.modifiers'
-        ])->get();
+        ])->with('modifiers')->get();
 
         return Inertia::render('Caja/Order/Create', [
             'categories' => $categories,

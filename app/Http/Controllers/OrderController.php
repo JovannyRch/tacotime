@@ -68,13 +68,13 @@ class OrderController extends Controller
             'combos.*.quantity' => 'required|integer|min:1',
             'combos.*.price' => 'required|numeric|min:0',
             'combos.*.complements' => 'nullable|string',
+            'combos.*.combo_modifiers' => 'nullable',
             'combos.*.notes' => 'nullable|string',
             'is_delivery' => 'nullable|boolean',
         ]);
 
         $user = Auth::user();
 
-        // Totales de lo que VIENE en la petición (para sumar a una orden existente)
         $incomingProductsTotal = collect($validated['products'] ?? [])
             ->sum(fn($p) => $p['price'] * $p['quantity']);
         $incomingCombosTotal = collect($validated['combos'] ?? [])
@@ -133,11 +133,19 @@ class OrderController extends Controller
                 }
 
                 foreach (collect($validated['combos'] ?? []) as $c) {
+
+                    $notes = $c['notes'] ?? null;
+                    if (isset($c['combo_modifiers']) && $c['combo_modifiers']) {
+                        $modText = 'Cortesías(' . implode(', ', $c['combo_modifiers']) . ')';
+                        $notes = $notes ? ($notes . ' | ' . $modText) : $modText;
+                    }
+
+
                     $order->combos()->attach($c['id'], [
                         'quantity'    => $c['quantity'],
                         'unit_price'  => $c['price'],
                         'complements' => $c['complements'] ?? null,
-                        'notes'       => $c['notes'] ?? null,
+                        'notes'       => $notes,
                         'created_at'  => now(),
                         'updated_at'  => now(),
                     ]);

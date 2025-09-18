@@ -33,7 +33,7 @@ class MeseroController extends Controller
         $combos = Combo::with([
             'products.modifiers',
             'products.category.modifiers'
-        ])->get();
+        ])->with('modifiers')->get();
 
 
 

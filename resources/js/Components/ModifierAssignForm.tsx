@@ -1,14 +1,14 @@
-import { Button } from '@/Components/ui/button';
-import { Label } from '@/Components/ui/label';
+import { Button } from "@/Components/ui/button";
+import { Label } from "@/Components/ui/label";
 import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from '@/Components/ui/select';
-import { AssignableOption, AssignableType, Modifier } from '@/types/global';
-import { useForm } from '@inertiajs/react';
+} from "@/Components/ui/select";
+import { AssignableOption, AssignableType, Modifier } from "@/types/global";
+import { useForm } from "@inertiajs/react";
 
 interface Props {
     modifier: Modifier;
@@ -27,10 +27,10 @@ export default function ModifierAssignForm({
 }: Props) {
     const { data, setData, post, processing, errors } = useForm<{
         assignable_type: AssignableType;
-        assignable_id: number | '';
+        assignable_id: number | "";
     }>({
-        assignable_type: 'product',
-        assignable_id: '',
+        assignable_type: "product",
+        assignable_id: "",
     });
 
     const optionsMap: Record<AssignableType, AssignableOption[]> = {
@@ -41,7 +41,7 @@ export default function ModifierAssignForm({
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        post(route('admin.modifiers.assign', modifier.id), {
+        post(route("admin.modifiers.assign", modifier.id), {
             onSuccess,
         });
     };
@@ -53,8 +53,8 @@ export default function ModifierAssignForm({
                 <Select
                     value={data.assignable_type}
                     onValueChange={(value: AssignableType) => {
-                        setData('assignable_type', value);
-                        setData('assignable_id', '');
+                        setData("assignable_type", value);
+                        setData("assignable_id", "");
                     }}
                 >
                     <SelectTrigger>
@@ -63,7 +63,7 @@ export default function ModifierAssignForm({
                     <SelectContent>
                         <SelectItem value="product">Producto</SelectItem>
                         <SelectItem value="category">Categoría</SelectItem>
-                        {/*  <SelectItem value="combo">Combo</SelectItem> */}
+                        <SelectItem value="combo">Combo</SelectItem>
                     </SelectContent>
                 </Select>
             </div>
@@ -73,7 +73,7 @@ export default function ModifierAssignForm({
                 <Select
                     value={data.assignable_id?.toString()}
                     onValueChange={(value) =>
-                        setData('assignable_id', parseInt(value))
+                        setData("assignable_id", parseInt(value))
                     }
                     disabled={!optionsMap[data.assignable_type].length}
                 >
