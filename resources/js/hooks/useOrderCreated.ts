@@ -15,6 +15,7 @@ export const useOrderCreated = ({
                 route("orders.comanda", newOrder.id) +
                 `?auto_print=1&lastProductIndex=${newOrder.lastProductIndex ?? 0}&lastComboIndex=${newOrder?.lastComboIndex ?? 0}`;
             window.open(url, "_blank");
+            window.open(url, "_blank");
         },
     });
 };
