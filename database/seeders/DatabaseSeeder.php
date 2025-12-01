@@ -14,7 +14,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
 
-        /*  DB::table('categories')->insert([
+         DB::table('categories')->insert([
             ['name' => 'Tacos'],
             ['name' => 'Alambres'],
             ['name' => 'Gringas'],
@@ -28,6 +28,6 @@ class DatabaseSeeder extends Seeder
             'password' => bcrypt('admin123'),
             'is_admin' => true,
             'role' => 'admin',
-        ]); */
+        ]);
     }
 }
